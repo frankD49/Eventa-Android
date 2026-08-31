@@ -49,6 +49,16 @@
 
                 <data android:scheme="eventa" android:host="auth-callback" />
             </intent-filter>
+
+            <!-- Deep link for password reset: eventa://password-reset -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="eventa" android:host="password-reset" />
+            </intent-filter>
         </activity>
 
         <provider

@@ -44,6 +44,11 @@ class AuthViewModel(val repository: AuthRepository) : ViewModel() {
     // completeRegistrationAfterConfirmation (org creation / invite join).
     var pendingRegistrationCompletion by mutableStateOf(false)
 
+    // ── Password Reset state ───────────────────────────────────────────────
+    var passwordResetRequested by mutableStateOf(false)
+    var passwordResetToken by mutableStateOf<String?>(null)
+    var passwordResetComplete by mutableStateOf(false)
+
     // The activity reference is set from the UI layer to enable BiometricPrompt
     var activity: FragmentActivity? = null
 
@@ -267,6 +272,56 @@ class AuthViewModel(val repository: AuthRepository) : ViewModel() {
                 showSuccess = true
             } else {
                 showError("This confirmation link is invalid or has expired. Please request a new one.")
+            }
+            isLoading = false
+        }
+    }
+
+    // ── Password Reset ─────────────────────────────────────────────────────
+
+    fun requestPasswordReset(email: String) {
+        viewModelScope.launch {
+            isLoading = true
+            when (val result = repository.requestPasswordReset(email.trim())) {
+                is Result.Success -> {
+                    passwordResetRequested = true
+                    successMessage = "If an account exists for that email, a reset link has been sent."
+                    showSuccess = true
+                }
+                is Result.Error -> showError(result.message)
+            }
+            isLoading = false
+        }
+    }
+
+    fun handlePasswordResetToken(token: String) {
+        passwordResetToken = token
+    }
+
+    fun verifyPasswordReset(newPassword: String, confirmPassword: String) {
+        if (newPassword != confirmPassword) {
+            showError("Passwords do not match")
+            return
+        }
+        if (newPassword.length < 6) {
+            showError("Password must be at least 6 characters")
+            return
+        }
+        val token = passwordResetToken ?: run {
+            showError("Invalid reset session. Please request a new link.")
+            return
+        }
+        viewModelScope.launch {
+            isLoading = true
+            val email = repository.verifyPasswordReset(token, newPassword)
+            if (email != null) {
+                passwordResetToken = null
+                passwordResetComplete = true
+                pendingEmail = email
+                successMessage = "Password reset successfully! Please sign in."
+                showSuccess = true
+            } else {
+                showError("This reset link is invalid or has expired. Please request a new one.")
             }
             isLoading = false
         }

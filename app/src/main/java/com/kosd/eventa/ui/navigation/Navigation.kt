@@ -30,6 +30,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kosd.eventa.ui.auth.LoginScreen
 import com.kosd.eventa.ui.auth.RegisterScreen
+import com.kosd.eventa.ui.auth.ForgotPasswordScreen
+import com.kosd.eventa.ui.auth.ResetPasswordScreen
 import com.kosd.eventa.ui.event.EventListScreen
 import com.kosd.eventa.ui.event.EventCreateScreen
 import com.kosd.eventa.ui.event.EventDetailScreen
@@ -55,6 +57,8 @@ sealed class Screen(val route: String) {
     object Login    : Screen("login")
     object Register : Screen("register")
     object EmailConfirmation : Screen("email_confirmation")
+    object ForgotPassword : Screen("forgot_password")
+    object ResetPassword  : Screen("reset_password")
     object Main     : Screen("main")
     object EventList   : Screen("event_list")
     object EventCreate : Screen("event_create")
@@ -113,6 +117,25 @@ fun EventaNavHost() {
         }
     }
 
+    // When a password-reset deep link token is received, navigate to the
+    // ResetPassword screen so the user can enter a new password.
+    LaunchedEffect(authViewModel.passwordResetToken) {
+        if (authViewModel.passwordResetToken != null) {
+            navController.navigate(Screen.ResetPassword.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
+    // When password reset is complete, navigate to Login.
+    LaunchedEffect(authViewModel.passwordResetComplete) {
+        if (authViewModel.passwordResetComplete) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     // Observe Supabase session status — when a session appears via deep link
     // callback while waiting for email confirmation, complete the registration.
     // In the Resend flow, the user signs in manually after email confirmation,
@@ -152,7 +175,8 @@ fun EventaNavHost() {
             LoginScreen(
                 viewModel            = authViewModel,
                 orgViewModel         = orgViewModel,
-                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                onNavigateToForgotPassword = { navController.navigate(Screen.ForgotPassword.route) }
             )
         }
 
@@ -169,6 +193,25 @@ fun EventaNavHost() {
                 viewModel   = authViewModel,
                 onBackToLogin = {
                     authViewModel.requiresEmailConfirmation = false
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                viewModel = authViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.ResetPassword.route) {
+            ResetPasswordScreen(
+                viewModel = authViewModel,
+                onBackToLogin = {
+                    authViewModel.passwordResetToken = null
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
