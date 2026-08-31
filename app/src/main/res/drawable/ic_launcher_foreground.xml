@@ -1,0 +1,74 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        Eventa launcher icon — three person figures (group/events theme).
+        White on teal background. Fits within the 72x72 safe zone (18-90).
+        Center figure is larger; flanking figures are smaller and lower.
+    -->
+
+    <!-- ── Left person ── -->
+    <!-- Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,40
+            A7,7 0 1,1 33,54
+            A7,7 0 1,1 33,40 Z" />
+    <!-- Shoulders/body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M22,62
+            C22,58 26,56 33,56
+            C40,56 44,58 44,62
+            L44,78
+            L22,78 Z" />
+
+    <!-- ── Right person ── -->
+    <!-- Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,40
+            A7,7 0 1,1 75,54
+            A7,7 0 1,1 75,40 Z" />
+    <!-- Shoulders/body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,62
+            C64,58 68,56 75,56
+            C82,56 86,58 86,62
+            L86,78
+            L64,78 Z" />
+
+    <!-- ── Center person (larger, raised) ── -->
+    <!-- Head -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30
+            A9,9 0 1,1 54,48
+            A9,9 0 1,1 54,30 Z" />
+    <!-- Shoulders/body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,58
+            C40,52 46,49 54,49
+            C62,49 68,52 68,58
+            L68,80
+            L40,80 Z" />
+
+    <!-- ── Accent: small teal checkmark badge (bottom-right) ── -->
+    <path
+        android:fillColor="#2DD4BF"
+        android:pathData="M78,72
+            A6,6 0 1,1 78,84
+            A6,6 0 1,1 78,72 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M75,78 L77,80 L81,75.5" />
+</vector>
