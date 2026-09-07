@@ -55,7 +55,6 @@ class MainActivity : FragmentActivity() {
         if (data.scheme == "eventa" && data.host == "auth-callback") {
             val token = data.getQueryParameter("token")
             if (!token.isNullOrBlank()) {
-                // Resend confirmation token — verify via Edge Function.
                 val authViewModel = ViewModelProvider(
                     this,
                     AuthViewModel.Factory()
@@ -63,7 +62,6 @@ class MainActivity : FragmentActivity() {
                 authViewModel.handleSignupConfirmationToken(token)
                 return
             }
-            // Fall back to Supabase SDK for legacy ?code= links
             client.handleDeeplinks(safeIntent)
             return
         }
