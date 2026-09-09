@@ -79,9 +79,11 @@ class AuthRepository {
             this.password = password
         }
         // Enforce app boundary: only Eventa-registered users may log in here.
-        val metadata = client.auth.currentUserOrNull()?.userMetadata
-        val appSource = metadata?.get("app_source")?.jsonPrimitive?.contentOrNull
-        if (appSource != "eventa") {
+        val uid = client.auth.currentUserOrNull()?.id ?: error("Not authenticated")
+        val registrations = client.postgrest["user_app_registrations"]
+            .select { filter { eq("user_id", uid); eq("app_source", "eventa") } }
+            .decodeList<JsonObject>()
+        if (registrations.isEmpty()) {
             client.auth.signOut()
             error("This account is not registered for Eventa. Please create a new Eventa account.")
         }
@@ -243,12 +245,22 @@ class AuthRepository {
                     user = null
                 )
             )
-            // Tag the user with app_source so they can't cross-login to LIAS.
-            // The Edge Function creates the user without app_source, so we set
-            // it here via the client after the session is imported.
+            // Register the user for Eventa via user_app_registrations table.
+            // The Edge Function creates the user without registration, so we
+            // insert the registration here after the session is imported.
             runCatching {
-                client.auth.updateUser {
-                    data = buildJsonObject { put("app_source", "eventa") }
+                val uid = client.auth.currentUserOrNull()?.id
+                if (uid != null) {
+                    client.postgrest["user_app_registrations"]
+                        .upsert(
+                            buildJsonObject {
+                                put("user_id", uid)
+                                put("app_source", "eventa")
+                            },
+                            {
+                                onConflict = "user_id,app_source"
+                            }
+                        )
                 }
             }
         }
@@ -264,9 +276,11 @@ class AuthRepository {
 
     suspend fun getCurrentUser(): Result<User> = runCatching {
         // Enforce app boundary on session restore.
-        val metadata = client.auth.currentUserOrNull()?.userMetadata
-        val appSource = metadata?.get("app_source")?.jsonPrimitive?.contentOrNull
-        if (appSource != "eventa") {
+        val uid = client.auth.currentUserOrNull()?.id ?: error("Not authenticated")
+        val registrations = client.postgrest["user_app_registrations"]
+            .select { filter { eq("user_id", uid); eq("app_source", "eventa") } }
+            .decodeList<JsonObject>()
+        if (registrations.isEmpty()) {
             client.auth.signOut()
             error("This account is not registered for Eventa.")
         }
