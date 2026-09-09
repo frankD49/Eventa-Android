@@ -425,7 +425,7 @@ class OrganizationRepository {
         if (memberships.isEmpty()) return@runCatching Result.Success(emptyList())
         val orgIds = memberships.map { it.organizationId }
         val orgs = client.postgrest["organizations"]
-            .select { filter { isIn("id", orgIds) } }
+            .select { filter { isIn("id", orgIds); eq("app_source", "eventa") } }
             .decodeList<Organization>()
         Result.Success(orgs)
     }.getOrElse { Result.Error(it.toErrorMessage()) }
